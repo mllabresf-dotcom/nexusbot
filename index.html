@@ -1,0 +1,2711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Defense | Ciberseguridad Avanzada para Web y Comunidades</title>
+    <meta name="description" content="Empresa de ciberseguridad especializada en protección de páginas web, servidores de Discord y Telegram. Conoce nuestro ecosistema de defensa.">
+
+    <link rel="icon" type="image/png" href="Logo1.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+    <script src="https://unpkg.com/three"></script>
+    <script src="https://unpkg.com/globe.gl"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <style>
+        :root {
+            --primary: #00E5FF;
+            --primary-glow: rgba(0, 229, 255, 0.4);
+            --accent: #2979FF;
+            --accent-glow: rgba(41, 121, 255, 0.4);
+            --bg-dark: #02040a;
+            --bg-card: rgba(13, 17, 26, 0.6);
+            --bg-card-hover: rgba(18, 24, 38, 0.8);
+            --text-main: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --gradient: linear-gradient(135deg, #00E5FF 0%, #2979FF 100%);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.06);
+            --glass-border-hover: 1px solid rgba(0, 229, 255, 0.3);
+            --shadow-premium: 0 20px 40px -10px rgba(0, 0, 0, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+            cursor: none;
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+            overflow-y: hidden; 
+        }
+
+        body.loaded {
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, .stat-number, .intro-title {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* =========================================
+           CUSTOM CURSOR
+           ========================================= */
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10000;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+
+        .cursor-ring {
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(0, 229, 255, 0.5);
+            border-radius: 50%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, border-color 0.3s, background-color 0.3s;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+
+        .cursor-hover .cursor-ring {
+            width: 60px;
+            height: 60px;
+            background-color: rgba(0, 229, 255, 0.1);
+            border-color: var(--primary);
+        }
+
+        /* =========================================
+           GLITCH EFFECT
+           ========================================= */
+        .glitch-hover {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .glitch-hover:hover::before,
+        .glitch-hover:hover::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+        }
+        
+        .glitch-hover:hover::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        
+        .glitch-hover:hover::after {
+            left: -2px;
+            text-shadow: -2px 0 #00E5FF;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(7px, 9999px, 81px, 0); }
+            20% { clip: rect(61px, 9999px, 14px, 0); }
+            40% { clip: rect(31px, 9999px, 98px, 0); }
+            60% { clip: rect(82px, 9999px, 12px, 0); }
+            80% { clip: rect(10px, 9999px, 53px, 0); }
+            100% { clip: rect(59px, 9999px, 25px, 0); }
+        }
+        @keyframes glitch-anim2 {
+            0% { clip: rect(29px, 9999px, 86px, 0); }
+            20% { clip: rect(14px, 9999px, 42px, 0); }
+            40% { clip: rect(85px, 9999px, 63px, 0); }
+            60% { clip: rect(3px, 9999px, 14px, 0); }
+            80% { clip: rect(57px, 9999px, 91px, 0); }
+            100% { clip: rect(2px, 9999px, 34px, 0); }
+        }
+
+        /* =========================================
+           INTRO ANIMATION STYLES
+           ========================================= */
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-dark);
+            z-index: 9998;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s cubic-bezier(0.8, 0, 0.2, 1), visibility 0.8s;
+        }
+
+        .intro-content {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .intro-shield-svg {
+            width: 130px;
+            height: 130px;
+            margin-bottom: 30px;
+            overflow: visible;
+        }
+
+        .shield-path {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            animation: drawShield 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            filter: drop-shadow(0 0 20px var(--primary-glow));
+        }
+
+        .shield-fill {
+            fill: url(#intro-gradient);
+            opacity: 0;
+            animation: fillShield 1s ease forwards 1.5s;
+        }
+
+        @keyframes drawShield { to { stroke-dashoffset: 0; } }
+        @keyframes fillShield { to { opacity: 0.15; } }
+
+        .intro-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 6px;
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+            animation: fadeUpText 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards 1s;
+            text-transform: uppercase;
+            text-shadow: 0 0 30px rgba(255,255,255,0.1);
+        }
+
+        .intro-subtitle {
+            font-size: 1.1rem;
+            color: var(--primary);
+            letter-spacing: 4px;
+            opacity: 0;
+            margin-top: 15px;
+            animation: fadeInSimple 0.8s ease forwards 1.6s;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .intro-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle at 50% 50%, var(--primary-glow) 0%, transparent 60%);
+            opacity: 0.3;
+            z-index: 1;
+            animation: pulseGlow 4s infinite alternate;
+        }
+
+        body.loaded #intro-overlay {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transform: scale(1.05);
+        }
+
+        @keyframes fadeUpText { to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes fadeInSimple { to { opacity: 1; } }
+        @keyframes pulseGlow {
+            from { opacity: 0.2; transform: scale(0.95); }
+            to { opacity: 0.4; transform: scale(1.05); }
+        }
+
+        /* =========================================
+           BACKGROUND & MESH GRAIDENT
+           ========================================= */
+        .background-fx {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: var(--bg-dark);
+            overflow: hidden;
+        }
+
+        .mesh-gradient {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: 
+                radial-gradient(circle at 15% 10%, rgba(41, 121, 255, 0.08) 0%, transparent 40%), 
+                radial-gradient(circle at 85% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(13, 17, 26, 1) 0%, transparent 100%);
+            filter: blur(60px);
+            z-index: 1;
+            transition: transform 0.5s ease-out;
+        }
+
+        .grid-lines {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 80px 80px;
+            transform: perspective(1000px) rotateX(60deg);
+            z-index: 2;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: perspective(1000px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(1000px) rotateX(60deg) translateY(80px); }
+        }
+
+        /* =========================================
+           HEADER & NAV
+           ========================================= */
+        header {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 25px 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            animation: fadeInHeader 1s ease forwards 3s;
+        }
+
+        @keyframes fadeInHeader { to { opacity: 1; } }
+
+        header.scrolled {
+            background: rgba(2, 4, 10, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px 0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+        }
+
+        .logo {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 15px var(--primary-glow));
+            transition: transform 0.3s ease;
+        }
+
+        .logo-container:hover .logo {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.3s;
+            position: relative;
+            display: inline-block;
+        }
+
+        .nav-links a:hover { color: #fff; }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background: var(--gradient);
+            transition: width 0.3s ease;
+            border-radius: 2px;
+        }
+
+        .nav-links a:hover::after { width: 100%; }
+
+        .lang-switch {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: none;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .lang-switch:hover {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* =========================================
+           HERO SECTION & PARALLAX ICONS
+           ========================================= */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 180px 40px 100px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .hero-content {
+            flex: 1.2;
+            max-width: 700px;
+            z-index: 2;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0, 229, 255, 0.05);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 35px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.05);
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+            animation: pulse 2s infinite;
+        }
+
+        .hero h1 {
+            font-size: 76px;
+            line-height: 1.05;
+            font-weight: 900;
+            margin-bottom: 30px;
+            letter-spacing: -2.5px;
+            color: #fff;
+        }
+
+        .text-gradient {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--text-muted);
+            margin-bottom: 50px;
+            max-width: 580px;
+            font-weight: 400;
+            line-height: 1.7;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 18px 40px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            font-family: 'Inter', sans-serif;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--text-main);
+            color: var(--bg-dark);
+            border: none;
+            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.2);
+            background: #fff;
+        }
+
+        /* --- VISUAL 3D HERO --- */
+        .hero-visual {
+            flex: 0.8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            perspective: 1200px;
+        }
+
+        .shield-wrapper {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            transform-style: preserve-3d;
+            animation: float3D 6s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        @keyframes float3D {
+            0%, 100% { transform: translateY(0) rotateX(0) rotateY(0); }
+            50% { transform: translateY(-20px) rotateX(5deg) rotateY(-5deg); }
+        }
+
+        .shield-core {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateZ(80px);
+            width: 320px;
+            filter: drop-shadow(0 0 80px rgba(0, 229, 255, 0.3));
+            z-index: 10;
+        }
+
+        .shield-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateZ(30px);
+            width: 460px;
+            height: 460px;
+            border: 1px solid rgba(0, 229, 255, 0.15);
+            border-radius: 50%;
+            border-top: 2px solid var(--primary);
+            border-right: 2px solid transparent;
+            animation: spin 20s linear infinite;
+            box-shadow: inset 0 0 40px rgba(0, 229, 255, 0.05);
+        }
+
+        .shield-ring.inner {
+            width: 380px;
+            height: 380px;
+            border: 1px solid rgba(41, 121, 255, 0.15);
+            border-bottom: 2px solid var(--accent);
+            border-left: 2px solid transparent;
+            animation: spin 25s linear infinite reverse;
+            transform: translate(-50%, -50%) translateZ(50px);
+        }
+
+        @keyframes spin {
+            100% { transform: translate(-50%, -50%) translateZ(30px) rotate(360deg); }
+        }
+
+        /* --- FLOATING TECH ICONS --- */
+        .floating-icon {
+            position: absolute;
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.15);
+            z-index: 1;
+            transition: color 0.3s;
+        }
+        .floating-icon.f-1 { top: 10%; left: 10%; }
+        .floating-icon.f-2 { top: 20%; right: 5%; font-size: 32px; }
+        .floating-icon.f-3 { bottom: 15%; left: 5%; font-size: 28px; }
+        .floating-icon.f-4 { bottom: 10%; right: 15%; }
+        .floating-icon.f-5 { top: 50%; left: -10%; font-size: 40px; }
+        .floating-icon.f-6 { top: 60%; right: -5%; }
+        
+        .floating-icon:hover {
+            color: var(--primary);
+            filter: drop-shadow(0 0 10px var(--primary-glow));
+        }
+
+        /* =========================================
+           MARQUEE INFINITO PERFECTO (NUEVO DISEÑO)
+           ========================================= */
+        .marquee-section {
+            background: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0, 229, 255, 0.05) 50%, rgba(0,0,0,0) 100%);
+            padding: 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        /* Efecto difuminado en los bordes para que los logos "aparezcan" de la nada */
+        .marquee-section::before,
+        .marquee-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 150px;
+            height: 100%;
+            z-index: 2;
+        }
+        .marquee-section::before {
+            left: 0;
+            background: linear-gradient(to right, var(--bg-dark) 0%, transparent 100%);
+        }
+        .marquee-section::after {
+            right: 0;
+            background: linear-gradient(to left, var(--bg-dark) 0%, transparent 100%);
+        }
+
+        .marquee-track {
+            display: flex;
+            width: fit-content;
+            animation: scrollMarquee 25s linear infinite;
+        }
+        
+        .marquee-track:hover {
+            animation-play-state: paused;
+        }
+
+        /* Logos Grandes y sin texto */
+        .marquee-track i {
+            font-size: 60px;
+            color: rgba(255,255,255,0.2);
+            margin: 0 50px;
+            transition: all 0.4s ease;
+            filter: grayscale(100%) opacity(0.5);
+        }
+        
+        .marquee-track i:hover {
+            color: var(--primary);
+            filter: grayscale(0%) opacity(1);
+            transform: scale(1.3) translateY(-5px);
+            text-shadow: 0 10px 20px var(--primary-glow);
+        }
+
+        /* 50% shift porque hay 2 sets exactos duplicados */
+        @keyframes scrollMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); } 
+        }
+
+        /* =========================================
+           PINNED TERMINAL DEFENSE 
+           ========================================= */
+        .pinned-terminal-section {
+            height: 300vh;
+            position: relative;
+            z-index: 5;
+            background: var(--bg-dark);
+        }
+        
+        .sticky-terminal-container {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 50%, rgba(13, 17, 26, 0.8) 0%, var(--bg-dark) 100%);
+        }
+        
+        .terminal-window {
+            width: 900px;
+            max-width: 95%;
+            background: rgba(5, 7, 12, 0.95);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.9), 0 0 40px rgba(0, 229, 255, 0.15);
+            backdrop-filter: blur(20px);
+            opacity: 0;
+            transform: translateY(100px);
+            overflow: hidden;
+        }
+        
+        .terminal-header {
+            background: rgba(255,255,255,0.03);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .term-dot.r { background: #ff5f56; }
+        .term-dot.y { background: #ffbd2e; }
+        .term-dot.g { background: #27c93f; }
+        
+        .term-title {
+            margin-left: 15px;
+            color: var(--text-muted);
+            font-family: 'Fira Code', monospace;
+            font-size: 14px;
+        }
+
+        .terminal-body {
+            padding: 30px;
+            font-family: 'Fira Code', monospace;
+            color: #00E5FF;
+            font-size: 15px;
+            line-height: 1.8;
+            min-height: 350px;
+            white-space: pre-wrap;
+            text-shadow: 0 0 5px rgba(0, 229, 255, 0.5);
+        }
+
+        .term-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background: var(--primary);
+            animation: blink 1s infinite;
+            vertical-align: middle;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* =========================================
+           PINNED GLOBE THREAT MAP SECTION + HUD (NUEVO)
+           ========================================= */
+        .pinned-globe-section {
+            height: 400vh;
+            position: relative;
+            z-index: 5;
+            background: var(--bg-dark);
+        }
+
+        .sticky-container {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 50%, rgba(2, 4, 10, 0.8) 0%, rgba(2, 4, 10, 1) 100%);
+        }
+
+        #globeViz {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vw;
+            height: 100vh;
+            opacity: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* HUD Overlay para el globo */
+        .hud-overlay {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            width: 90%;
+            height: 90%;
+            pointer-events: none;
+            z-index: 2;
+            opacity: 0;
+        }
+        
+        .hud-corner {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px solid var(--primary);
+            opacity: 0.7;
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+        .hud-corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; }
+        .hud-corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; }
+        .hud-corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; }
+        .hud-corner.br { bottom: 0; right: 0; border-left: none; border-top: none; }
+
+        .hud-data {
+            position: absolute;
+            top: 20px;
+            left: 80px;
+            color: var(--primary);
+            font-family: 'Fira Code', monospace;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .globe-overlay-text {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            pointer-events: none;
+            width: 80%;
+            max-width: 1000px;
+        }
+
+        .globe-overlay-text h2 {
+            font-size: 4vw;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 20px var(--primary-glow);
+            letter-spacing: 5px;
+            font-family: 'Outfit', sans-serif;
+            text-transform: uppercase;
+            min-height: 1.2em;
+        }
+
+        .globe-overlay-text .globe-sub {
+            font-size: 1.5vw;
+            color: var(--primary);
+            margin-top: 20px;
+            opacity: 0;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: rgba(0, 229, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            border: 1px solid var(--primary);
+        }
+
+        /* =========================================
+           SECCIONES COMUNES
+           ========================================= */
+        .section {
+            padding: 140px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 100px;
+        }
+
+        .section-title {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 25px;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+
+        .section-desc {
+            color: var(--text-muted);
+            font-size: 19px;
+            max-width: 650px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        /* =========================================
+           SERVICES SECTION & CARD SCANNERS (NUEVO)
+           ========================================= */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+            perspective: 1000px;
+        }
+
+        .service-card {
+            background: linear-gradient(180deg, rgba(13, 17, 26, 0.8) 0%, rgba(2, 4, 10, 0.9) 100%);
+            border: var(--glass-border);
+            border-radius: 32px;
+            padding: 50px 40px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            transform-style: preserve-3d;
+        }
+        
+        /* Scanner Laser dentro de la tarjeta */
+        .card-scanner {
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary);
+            box-shadow: 0 0 20px 5px var(--primary-glow);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 0;
+        }
+
+        .service-card:hover .card-scanner {
+            opacity: 1;
+            animation: scanCard 2s linear infinite;
+        }
+
+        @keyframes scanCard {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 4px;
+            background: var(--gradient);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+            z-index: 1;
+        }
+
+        .service-card:hover {
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 229, 255, 0.1);
+            border-color: rgba(0, 229, 255, 0.3);
+        }
+
+        .service-card:hover::before { transform: scaleX(1); }
+
+        .service-icon {
+            font-size: 48px;
+            color: var(--primary);
+            margin-bottom: 30px;
+            background: -webkit-linear-gradient(135deg, #00E5FF, #2979FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            transform: translateZ(30px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .service-card h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #fff;
+            transform: translateZ(20px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .service-card p {
+            color: var(--text-muted);
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            transform: translateZ(10px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .service-features {
+            list-style: none;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 20px;
+            transform: translateZ(10px);
+            position: relative;
+            z-index: 2;
+        }
+
+        .service-features li {
+            color: #E5E7EB;
+            margin-bottom: 12px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .service-features li i { color: var(--primary); font-size: 12px; }
+
+        /* =========================================
+           STATS SECTION
+           ========================================= */
+        .stats-section {
+            padding: 80px 40px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .stat-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 20%;
+            height: 60%;
+            width: 1px;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .stat-icon {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 229, 255, 0.05);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 229, 255, 0.1);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 46px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 5px;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* =========================================
+           ORIGINS SECTION
+           ========================================= */
+        .bot-project-wrapper {
+            background: linear-gradient(135deg, rgba(13, 17, 26, 0.9) 0%, rgba(0, 229, 255, 0.05) 100%);
+            border-radius: 40px;
+            padding: 60px;
+            border: 1px solid rgba(0, 229, 255, 0.2);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .bot-project-wrapper::before {
+            content: '\f392'; 
+            font-family: "Font Awesome 6 Brands";
+            position: absolute;
+            font-size: 250px;
+            color: rgba(255,255,255,0.02);
+            top: -50px;
+            right: -50px;
+            transform: rotate(-15deg);
+        }
+
+        .bot-project-wrapper h2 {
+            font-size: 36px;
+            color: #fff;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .bot-project-wrapper p {
+            color: var(--text-muted);
+            font-size: 18px;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* =========================================
+           TEAM SECTION
+           ========================================= */
+        .team-grid {
+            display: flex;
+            justify-content: center;
+            gap: 60px;
+            max-width: 900px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            perspective: 1000px;
+        }
+
+        .team-card {
+            background: var(--bg-card);
+            border: var(--glass-border);
+            border-radius: 30px;
+            padding: 50px 40px;
+            text-align: center;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            backdrop-filter: blur(20px);
+            flex: 1;
+            min-width: 280px;
+            max-width: 350px;
+            transform-style: preserve-3d;
+        }
+
+        .team-card:hover {
+            border-color: var(--glass-border-hover);
+            box-shadow: var(--shadow-premium);
+        }
+
+        .team-avatar {
+            width: 140px;
+            height: 140px;
+            margin: 0 auto 30px;
+            border-radius: 50%;
+            padding: 4px;
+            background: var(--gradient);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4), 0 0 20px var(--primary-glow);
+            overflow: hidden;
+            transform: translateZ(40px);
+        }
+        
+        .team-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid var(--bg-dark);
+        }
+
+        .team-card h3 {
+            font-size: 26px;
+            color: #fff;
+            margin-bottom: 8px;
+            transform: translateZ(20px);
+        }
+
+        .team-role {
+            color: var(--primary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            display: block;
+            transform: translateZ(15px);
+        }
+
+        /* =========================================
+           RAID GRAPH SECTION & RADAR SCAN (NUEVO)
+           ========================================= */
+        .raid-graph-section {
+            padding: 100px 40px;
+            position: relative;
+        }
+
+        .graph-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: var(--glass-border);
+            border-radius: 32px;
+            padding: 60px;
+            position: relative;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-premium);
+            overflow: hidden; /* Para el radar */
+        }
+        
+        /* Laser del Radar */
+        .graph-radar {
+            position: absolute;
+            top: 0;
+            left: -10%;
+            width: 5%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(0, 229, 255, 0.4), transparent);
+            filter: blur(5px);
+            animation: radarSweep 4s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes radarSweep {
+            0% { left: -10%; }
+            50% { left: 110%; }
+            100% { left: -10%; }
+        }
+
+        .graph-svg {
+            width: 100%;
+            height: auto;
+            overflow: visible;
+            position: relative;
+            z-index: 2;
+        }
+
+        .graph-line {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 4;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 15px var(--primary-glow));
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            /* Pulso de la linea */
+            animation: pulseStroke 2s infinite alternate;
+        }
+        
+        @keyframes pulseStroke {
+            0% { filter: drop-shadow(0 0 10px var(--primary-glow)); stroke-width: 4; }
+            100% { filter: drop-shadow(0 0 25px var(--primary-glow)); stroke-width: 6; }
+        }
+
+        .graph-area {
+            fill: url(#graphGradient);
+            opacity: 0.15;
+        }
+
+        .graph-axis {
+            stroke: rgba(255,255,255,0.05);
+            stroke-width: 1;
+            stroke-dasharray: 5,5;
+        }
+
+        /* =========================================
+           FOOTER
+           ========================================= */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: rgba(2, 4, 10, 0.95);
+            padding: 100px 40px 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 80px;
+        }
+
+        .footer-brand h2 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+
+        .footer-brand p {
+            color: var(--text-muted);
+            max-width: 360px;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .footer-col h4 {
+            color: #fff;
+            margin-bottom: 25px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .footer-col a {
+            display: inline-block;
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-bottom: 16px;
+            font-size: 15px;
+            transition: color 0.3s;
+            clear: both;
+            float: left;
+            width: 100%;
+        }
+
+        .footer-col a:hover { color: var(--primary); }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 0 auto;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: rgba(255,255,255,0.3);
+            font-size: 14px;
+        }
+
+        /* =========================================
+            MEDIA QUERIES
+            ========================================= */
+        @media (max-width: 1024px) {
+            .hero { flex-direction: column; text-align: center; padding-top: 160px; }
+            .hero-content { margin-bottom: 80px; max-width: 100%; }
+            .cta-group { justify-content: center; }
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: block; }
+            .footer-content { grid-template-columns: 1fr 1fr; }
+            * { cursor: auto; }
+            .cursor-dot, .cursor-ring { display: none; }
+            .floating-icon { display: none; }
+            .hud-overlay { display: none; }
+            .hero h1 { font-size: 56px; letter-spacing: -1.5px; }
+            .shield-wrapper { width: 400px; height: 400px; }
+            .shield-ring { width: 380px; height: 380px; }
+            .shield-ring.inner { width: 300px; height: 300px; }
+            .shield-core { width: 260px; }
+        }
+
+        /* Mobile Menu Styles */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1001;
+            transition: transform 0.3s;
+        }
+
+        .mobile-menu-btn.active {
+            transform: rotate(90deg);
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(2, 4, 10, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .mobile-menu.active {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .mobile-menu a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .mobile-menu a:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .nav-container { padding: 0 20px; }
+            .logo { width: 36px; height: 36px; }
+            .logo-text { font-size: 20px; }
+            
+            .hero { 
+                padding: 140px 20px 60px; 
+                min-height: auto;
+                flex-direction: column;
+            }
+            
+            .hero h1 { 
+                font-size: 36px; 
+                line-height: 1.2;
+                letter-spacing: -1px;
+            }
+            
+            .hero p {
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            
+            .status-badge {
+                padding: 6px 14px;
+                font-size: 12px;
+                margin-bottom: 25px;
+            }
+            
+            .cta-group {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn {
+                padding: 14px 28px;
+                font-size: 14px;
+                justify-content: center;
+            }
+            
+            .shield-wrapper { 
+                width: 280px; 
+                height: 280px; 
+                margin-top: 20px;
+            }
+            .shield-ring { 
+                width: 260px; 
+                height: 260px; 
+            }
+            .shield-ring.inner { 
+                width: 200px; 
+                height: 200px; 
+            }
+            .shield-core { 
+                width: 160px; 
+            }
+
+            .section { 
+                padding: 80px 20px; 
+            }
+            
+            .section-title { 
+                font-size: 28px; 
+                letter-spacing: -0.5px;
+            }
+            
+            .section-desc {
+                font-size: 15px;
+            }
+            
+            .section-header {
+                margin-bottom: 50px;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .service-card {
+                padding: 30px 25px;
+                border-radius: 20px;
+            }
+
+            .service-icon {
+                font-size: 36px;
+                margin-bottom: 20px;
+            }
+
+            .service-card h3 {
+                font-size: 22px;
+            }
+
+            .service-card p {
+                font-size: 14px;
+            }
+
+            .stats-section {
+                padding: 40px 20px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                padding: 25px;
+                border-radius: 16px;
+            }
+
+            .stat-item {
+                padding: 15px 10px;
+            }
+
+            .stat-item:not(:last-child)::after {
+                display: none;
+            }
+
+            .stat-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 22px;
+            }
+
+            .stat-number {
+                font-size: 32px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+
+            .bot-project-wrapper {
+                padding: 40px 25px;
+                border-radius: 24px;
+            }
+
+            .bot-project-wrapper h2 {
+                font-size: 26px;
+            }
+
+            .bot-project-wrapper p {
+                font-size: 15px;
+            }
+
+            .team-grid {
+                flex-direction: column;
+                align-items: center;
+                gap: 30px;
+            }
+
+            .team-card {
+                width: 100%;
+                max-width: 320px;
+                padding: 35px 25px;
+            }
+
+            .team-avatar {
+                width: 100px;
+                height: 100px;
+            }
+
+            .team-card h3 {
+                font-size: 22px;
+            }
+
+            .graph-container {
+                padding: 30px 20px;
+                border-radius: 20px;
+            }
+
+            .globe-overlay-text h2 { 
+                font-size: 6vw; 
+                letter-spacing: 2px;
+            }
+            
+            .globe-overlay-text .globe-sub { 
+                font-size: 3vw; 
+                padding: 8px 15px;
+            }
+
+            .terminal-window {
+                width: 95%;
+                margin: 0 10px;
+            }
+
+            .terminal-body { 
+                font-size: 11px; 
+                min-height: 200px;
+                padding: 20px;
+            }
+
+            .term-title {
+                font-size: 11px;
+            }
+
+            footer {
+                padding: 60px 20px 30px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+
+            .footer-brand {
+                text-align: center;
+            }
+
+            .footer-brand p {
+                max-width: 100%;
+            }
+
+            .footer-col h4 {
+                margin-bottom: 20px;
+            }
+
+            .footer-col a {
+                float: none;
+                display: block;
+                text-align: center;
+                margin-bottom: 12px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+
+            .marquee-track i {
+                font-size: 40px;
+                margin: 0 25px;
+            }
+
+            .intro-title { 
+                font-size: 2rem; 
+                letter-spacing: 3px;
+            }
+            .intro-subtitle { 
+                font-size: 0.9rem; 
+                letter-spacing: 2px;
+            }
+            .intro-shield-svg {
+                width: 100px;
+                height: 100px;
+            }
+        }
+
+            .mobile-security-section {
+                display: none;
+            }
+
+            @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 28px;
+            }
+            
+            .shield-wrapper {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .shield-ring {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .shield-ring.inner {
+                width: 160px;
+                height: 160px;
+            }
+            
+            .shield-core {
+                width: 120px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-title {
+                font-size: 24px;
+            }
+            
+            .globe-overlay-text h2 {
+                font-size: 20px;
+            }
+            
+            .globe-overlay-text .globe-sub { 
+                font-size: 10px;
+            }
+
+            /* Hide pinned scroll animations on mobile */
+            .pinned-terminal-section,
+            .pinned-globe-section {
+                display: none;
+            }
+
+            /* Mobile Alternative Security Section */
+            .mobile-security-section {
+                display: none;
+                padding: 60px 20px;
+                background: linear-gradient(180deg, var(--bg-dark) 0%, rgba(0, 229, 255, 0.03) 100%);
+            }
+
+            .mobile-security-content {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+
+            .mobile-security-header {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+
+            .mobile-security-icon {
+                width: 70px;
+                height: 70px;
+                margin: 0 auto 20px;
+                background: rgba(0, 229, 255, 0.1);
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid rgba(0, 229, 255, 0.3);
+            }
+
+            .mobile-security-icon i {
+                font-size: 32px;
+                color: var(--primary);
+            }
+
+            .mobile-security-header h2 {
+                font-size: 26px;
+                font-weight: 800;
+                color: #fff;
+                margin-bottom: 10px;
+                font-family: 'Outfit', sans-serif;
+            }
+
+            .mobile-security-header p {
+                font-size: 14px;
+                color: var(--text-muted);
+                line-height: 1.6;
+            }
+
+            .mobile-security-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+                margin-bottom: 30px;
+            }
+
+            .mobile-security-item {
+                background: var(--bg-card);
+                border: var(--glass-border);
+                border-radius: 16px;
+                padding: 20px;
+                text-align: center;
+            }
+
+            .mobile-security-item i {
+                font-size: 24px;
+                color: var(--primary);
+                margin-bottom: 10px;
+            }
+
+            .mobile-security-item span {
+                display: block;
+                font-size: 11px;
+                color: var(--text-muted);
+                margin-bottom: 5px;
+            }
+
+            .mobile-security-item strong {
+                font-size: 22px;
+                font-weight: 800;
+                color: #fff;
+                font-family: 'Outfit', sans-serif;
+            }
+
+            .mobile-terminal-preview {
+                background: rgba(5, 7, 12, 0.95);
+                border: 1px solid rgba(0, 229, 255, 0.3);
+                border-radius: 12px;
+                overflow: hidden;
+            }
+
+            .mobile-term-header {
+                background: rgba(255,255,255,0.03);
+                padding: 12px 15px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .mobile-term-title {
+                margin-left: 10px;
+                color: var(--text-muted);
+                font-family: 'Fira Code', monospace;
+                font-size: 11px;
+            }
+
+            .mobile-term-body {
+                padding: 15px;
+                font-family: 'Fira Code', monospace;
+                font-size: 11px;
+                color: var(--primary);
+                line-height: 1.8;
+            }
+
+            @media (max-width: 768px) {
+                .mobile-security-section {
+                    display: block;
+                }
+                .pinned-terminal-section,
+                .pinned-globe-section {
+                    display: none;
+                }
+            }
+    </style>
+</head>
+<body>
+
+    <div class="cursor-dot" id="cursorDot"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <svg style="width:0;height:0;position:absolute;" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="intro-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00E5FF" />
+          <stop offset="100%" stop-color="#2979FF" />
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <div id="intro-overlay">
+        <div class="intro-particles"></div>
+        <div class="intro-content">
+            <svg class="intro-shield-svg" viewBox="0 0 100 120">
+                <path class="shield-path" d="M50 10 L10 30 V60 C10 85 25 105 50 115 C75 105 90 85 90 60 V30 L50 10 Z" />
+                <path class="shield-fill" d="M50 10 L10 30 V60 C10 85 25 105 50 115 C75 105 90 85 90 60 V30 L50 10 Z" />
+            </svg>
+            <h1 class="intro-title" data-i18n="intro_title">Nova Defense</h1>
+            <p class="intro-subtitle" data-i18n="intro_subtitle">Empresa de Ciberseguridad</p>
+        </div>
+    </div>
+
+    <div class="background-fx">
+        <div class="mesh-gradient" id="bgMesh"></div>
+        <div class="grid-lines" id="bgGridLines"></div>
+    </div>
+
+    <header id="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo-container magnetic-element">
+                <img src="Logo1.png" alt="Logo" class="logo">
+                <span class="logo-text">Nova Defense</span>
+            </a>
+            
+            <div class="nav-right">
+                <nav class="nav-links">
+                    <a href="#services" class="magnetic-element" data-i18n="nav_services">Servicios</a>
+                    <a href="#about" class="magnetic-element" data-i18n="nav_origins">Orígenes</a>
+                    <a href="#team" class="magnetic-element" data-i18n="nav_team">Fundadores</a>
+                    <a href="https://discord.gg/FsbvgQWKYy" target="_blank" class="magnetic-element" data-i18n="nav_contact">Contacto</a>
+                    <a href="https://dashboard.novadefense.es" class="magnetic-element" data-i18n="">Dashboard Web</a>
+                </nav>
+                
+                <button class="lang-switch magnetic-element" id="langToggle">
+                    <i class="fas fa-globe"></i> <span id="langText">ES</span>
+                </button>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#services" class="mobile-menu-link">Servicios</a>
+        <a href="#about" class="mobile-menu-link">Orígenes</a>
+        <a href="#team" class="mobile-menu-link">Fundadores</a> 
+        <a href="https://discord.gg/FsbvgQWKYy" target="_blank" class="mobile-menu-link">Contacto</a>
+    </div>
+
+    <section class="hero" id="home">
+        <i class="fas fa-lock floating-icon f-1 p-icon"></i>
+        <i class="fas fa-server floating-icon f-2 p-icon"></i>
+        <i class="fas fa-shield-virus floating-icon f-3 p-icon"></i>
+        <i class="fas fa-code floating-icon f-4 p-icon"></i>
+        <i class="fas fa-bug-slash floating-icon f-5 p-icon"></i>
+        <i class="fas fa-fingerprint floating-icon f-6 p-icon"></i>
+
+        <div class="hero-content gsap-hero-text">
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span data-i18n="hero_badge">Sistemas de Defensa Activos</span>
+            </div>
+            <h1 class="glitch-hover" data-text="Protección Digital de Siguiente Nivel" data-i18n="hero_title">Protección Digital de <br><span class="text-gradient">Siguiente Nivel</span></h1>
+            <p data-i18n="hero_desc">
+                Aseguramos tu infraestructura. Proveemos software de ciberseguridad corporativa para páginas web y moderación automática blindada para comunidades en Discord y Telegram.
+            </p>
+            <div class="cta-group">
+                <a href="#services" class="btn btn-primary magnetic-element">
+                    <i class="fas fa-shield-check"></i> <span data-i18n="hero_btn">Ver Servicios</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-visual gsap-hero-shield">
+            <div class="shield-wrapper" id="shieldWrapper">
+                <div class="shield-ring"></div>
+                <div class="shield-ring inner"></div>
+                <svg class="shield-core" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L3 7V12C3 17 7 21 12 22C17 21 21 17 21 12V7L12 2Z" fill="url(#shield-gradient)" stroke="#00E5FF" stroke-width="0.5"/>
+                    <path d="M12 6L12 18M12 12L16 12M8 12L12 12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="shield-gradient" x1="12" y1="2" x2="12" y2="22" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#00E5FF" stop-opacity="0.3"/>
+                            <stop offset="1" stop-color="#2979FF" stop-opacity="0.6"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <div class="marquee-section">
+        <div class="marquee-track">
+            <i class="fab fa-discord" title="Discord"></i>
+            <i class="fab fa-telegram" title="Telegram"></i>
+            <i class="fab fa-linux" title="Linux"></i>
+            <i class="fab fa-aws" title="AWS"></i>
+            <i class="fab fa-cloudflare" title="Cloudflare"></i>
+            <i class="fab fa-windows" title="Windows Server"></i>
+            <i class="fab fa-docker" title="Docker"></i>
+            <i class="fab fa-github" title="GitHub"></i>
+            <i class="fab fa-discord" title="Discord"></i>
+            <i class="fab fa-telegram" title="Telegram"></i>
+            <i class="fab fa-linux" title="Linux"></i>
+            <i class="fab fa-aws" title="AWS"></i>
+            <i class="fab fa-cloudflare" title="Cloudflare"></i>
+            <i class="fab fa-windows" title="Windows Server"></i>
+            <i class="fab fa-docker" title="Docker"></i>
+            <i class="fab fa-github" title="GitHub"></i>
+        </div>
+    </div>
+
+    <section class="pinned-terminal-section" id="terminal-section">
+        <div class="sticky-terminal-container">
+            <div class="terminal-window" id="hacker-terminal">
+                <div class="terminal-header">
+                    <div class="term-dot r"></div>
+                    <div class="term-dot y"></div>
+                    <div class="term-dot g"></div>
+                    <div class="term-title">root@nova-defense:~# live_monitor --watch --mitigate</div>
+                </div>
+                <div class="terminal-body"><span id="term-text"></span><span class="term-cursor"></span></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pinned-globe-section" id="cyber-map">
+        <div class="sticky-container">
+            
+            <div class="hud-overlay" id="hudLayer">
+                <div class="hud-corner tl"></div>
+                <div class="hud-corner tr"></div>
+                <div class="hud-corner bl"></div>
+                <div class="hud-corner br"></div>
+                <div class="hud-data" id="hud-data-stream">
+                    INIT_SEQ: 0x00A1<br>
+                    LAT: --<br>
+                    LNG: --
+                </div>
+            </div>
+
+            <div id="globeViz"></div>
+            
+            <div class="globe-overlay-text">
+                <h2 id="scramble-text" class="glitch-hover" data-text=""></h2>
+                <p class="globe-sub" id="globe-sub-text"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Alternative Section (replaces terminal + globe) -->
+    <section class="mobile-security-section">
+        <div class="mobile-security-content">
+            <div class="mobile-security-header">
+                <div class="mobile-security-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>Protección Activa 24/7</h2>
+                <p>Nuestro sistema de defensa monitorea y bloquea amenazas en tiempo real</p>
+            </div>
+            <div class="mobile-security-grid">
+                <div class="mobile-security-item">
+                    <i class="fas fa-bug"></i>
+                    <span>Ataques Bloqueados</span>
+                    <strong>2.4M+</strong>
+                </div>
+                <div class="mobile-security-item">
+                    <i class="fas fa-globe"></i>
+                    <span>Servidores Protegidos</span>
+                    <strong>500+</strong>
+                </div>
+                <div class="mobile-security-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Respuesta</span>
+                    <strong>&lt;20ms</strong>
+                </div>
+                <div class="mobile-security-item">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Comunidades</span>
+                    <strong>23K+</strong>
+                </div>
+            </div>
+            <div class="mobile-terminal-preview">
+                <div class="mobile-term-header">
+                    <span class="term-dot r"></span>
+                    <span class="term-dot y"></span>
+                    <span class="term-dot g"></span>
+                    <span class="mobile-term-title">Nova Defense Monitor</span>
+                </div>
+                <div class="mobile-term-body">
+>> Sistema de Defensa: ACTIVO<br>
+>> Escudo WAF: PROTEGIENDO<br>
+>> Monitoreo: 24/7<br>
+>> Estado: <span style="color:#27c93f">SEGuro</span> ✓<br>
+<br>
+> Bloqueando tráfico malicioso...<br>
+> Identificando amenazas...<br>
+> Todo bajo control.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="stats-section" id="stats">
+        <div class="stats-grid gsap-scale-up">
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <span class="stat-number">+23K</span>
+                <span class="stat-label" data-i18n="stat_1">Usuarios Protegidos</span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-server"></i></div>
+                <span class="stat-number">+106</span>
+                <span class="stat-label" data-i18n="stat_2">Servidores Activos</span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-shield-alt"></i></div>
+                <span class="stat-number">24/7</span>
+                <span class="stat-label" data-i18n="stat_3">Monitoreo SOC</span>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+                <span class="stat-number">20ms</span>
+                <span class="stat-label" data-i18n="stat_4">Latencia Defensa</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="services">
+        <div class="section-header gsap-fade-up">
+            <h2 class="section-title glitch-hover" data-text="Ecosistema de Defensa Global" data-i18n="srv_title">Ecosistema de <span class="text-gradient">Defensa Global</span></h2>
+            <p class="section-desc" data-i18n="srv_desc">Como empresa de ciberseguridad, desarrollamos infraestructuras de protección adaptables a las plataformas más críticas de internet.</p>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card tilt-card gsap-card-left">
+                <div class="card-scanner"></div>
+                <i class="fas fa-globe service-icon"></i>
+                <h3 data-i18n="srv_1_title">Protección Web</h3>
+                <p data-i18n="srv_1_desc">Mitigación de ataques DDoS Capa 7, Web Application Firewall (WAF) y monitoreo de vulnerabilidades en tiempo real para tu negocio online.</p>
+                <ul class="service-features">
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_1_f1">Redirección de tráfico malicioso</span></li>
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_1_f2">Cifrado y análisis de logs</span></li>
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_1_f3">99.9% de Uptime garantizado</span></li>
+                </ul>
+            </div>
+            
+            <div class="service-card tilt-card gsap-card-bottom">
+                <div class="card-scanner"></div>
+                <i class="fab fa-discord service-icon"></i>
+                <h3 data-i18n="srv_2_title">Seguridad Discord</h3>
+                <p data-i18n="srv_2_desc">Nuestra división especializada. Prevenimos raids masivos, bloqueamos ataques de nuking y filtramos spam con IA antes de que afecte a tus usuarios.</p>
+                <ul class="service-features">
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_2_f1">Algoritmos Anti-Raid Neurales</span></li>
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_2_f2">Backups de infraestructura</span></li>
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_2_f3">Integración instantánea</span></li>
+                </ul>
+            </div>
+
+            <div class="service-card tilt-card gsap-card-right">
+                <div class="card-scanner"></div>
+                <i class="fab fa-telegram-plane service-icon"></i>
+                <h3 data-i18n="srv_3_title">Defensa Telegram</h3>
+                <p data-i18n="srv_3_desc">Gestión automatizada de comunidades grandes. Eliminación de bots maliciosos, control de flood y análisis de reputación de usuarios.</p>
+                <ul class="service-features">
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_3_f1">Captcha multi-nivel</span></li>
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_3_f2">Global Blacklist sincronizada</span></li>
+                    <li><i class="fas fa-check"></i> <span data-i18n="srv_3_f3">Filtros de contenido avanzado</span></li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="about">
+        <div class="bot-project-wrapper gsap-parallax-section">
+            <h2 data-i18n="about_title"><span class="text-gradient">Nuestros Orígenes:</span> Nova Defense</h2>
+            <p data-i18n="about_desc">Nuestra tecnología matriz nació desarrollando uno de los sistemas de seguridad autónomos más avanzados para la plataforma de Discord. Nova Defense fue el cimiento de la empresa y la demostración pública de nuestra capacidad para detener ataques masivos (raids y nuking) en milisegundos, tecnología que ahora aplicamos a gran escala en páginas web y Telegram.</p>
+        </div>
+    </section>
+
+    <section class="section" id="team">
+        <div class="section-header gsap-fade-up">
+            <h2 class="section-title glitch-hover" data-text="Nuestros Fundadores" data-i18n="team_title">Nuestros <span class="text-gradient">Fundadores</span></h2>
+            <p class="section-desc" data-i18n="team_desc">Los arquitectos principales detrás del núcleo de seguridad y operaciones de Nova Defense.</p>
+        </div>
+        <div class="team-grid">
+            <div class="team-card tilt-card gsap-card-left">
+                <div class="team-avatar">
+                    <img src="https://images-ext-1.discordapp.net/external/KzcMTKS-42I-uyzVq0_1sPWHyoP4b7K2mmxp-nvMmjg/https/cdn.discordapp.com/avatars/1008003141553369121/8e69bb368c04a86001a65bc2453a43e7.png?format=webp&quality=lossless&width=176&height=176" alt="Gonzalo">
+                </div>
+                <h3>Gonzalo</h3>
+                <span class="team-role">CEO / Lead Architect</span>
+            </div>
+            <div class="team-card tilt-card gsap-card-right">
+                <div class="team-avatar">
+                     <img src="https://images-ext-1.discordapp.net/external/7l6dwShgR4VCAh_A8V4bv3zjNSb3aGxGzByK63Yl0Bk/https/cdn.discordapp.com/avatars/1013940337150005279/525f297b1bc1edc4acacabd6b9c8984f.png?format=webp&quality=lossless&width=176&height=176" alt="Kurok">
+                </div>
+                <h3>Kurok</h3>
+                <span class="team-role">CTO / Security Core</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="raid-graph-section">
+        <div class="section-header gsap-fade-up">
+            <h2 class="section-title glitch-hover" data-text="Inteligencia de Amenazas Globales" data-i18n="graph_title">Inteligencia de <span class="text-gradient">Amenazas Globales</span></h2>
+            <p class="section-desc" data-i18n="graph_desc">Incremento global de ataques mitigados en nuestra infraestructura durante los últimos 30 días.</p>
+        </div>
+        <div class="graph-container">
+            <div class="graph-radar"></div> <svg class="graph-svg" viewBox="0 0 1000 400" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="graphGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#00E5FF" stop-opacity="0.5"/>
+                        <stop offset="100%" stop-color="#00E5FF" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                <line x1="0" y1="100" x2="1000" y2="100" class="graph-axis" />
+                <line x1="0" y1="200" x2="1000" y2="200" class="graph-axis" />
+                <line x1="0" y1="300" x2="1000" y2="300" class="graph-axis" />
+                
+                <path d="M0,350 Q100,340 200,250 T400,200 T600,150 T800,80 T1000,20 V400 H0 Z" class="graph-area" />
+                <path id="animGraph" d="M0,350 Q100,340 200,250 T400,200 T600,150 T800,80 T1000,20" class="graph-line" />
+            </svg>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h2>Nova Defense</h2>
+                <p data-i18n="footer_desc">Empresa líder en software de ciberseguridad. Protegemos infraestructuras web y moderamos de forma autónoma las comunidades más grandes de Discord y Telegram.</p>
+            </div>
+            <div class="footer-col">
+                <h4 data-i18n="footer_sol_title">Nuestras Soluciones</h4>
+                <a href="#services" data-i18n="footer_sol_1">Protección Web WAF</a>
+                <a href="#services" data-i18n="footer_sol_2">Seguridad Discord</a>
+                <a href="#services" data-i18n="footer_sol_3">Defensa Telegram</a>
+            </div>
+            <div class="footer-col">
+                <h4 data-i18n="footer_leg_title">Legal & Empresa</h4>
+                <a href="politicadeprivacidad.html" data-i18n="footer_leg_1">Política de Privacidad</a>
+                <a href="terminosdeservicio.html" data-i18n="footer_leg_2">Términos de Servicio</a>
+                <a href="#" data-i18n="footer_leg_3">Reportar Vulnerabilidad</a>
+            </div>
+            
+                        <div class="footer-col">
+                <h4 data-i18n="footer_sol_title">Otros Enlaces</h4>
+                <a href="https://dashboard.novadefense.es" data-i18n="footer_sol_1">Dashboard</a>
+                <a href="https://discord.com/invite/FsbvgQWKYy" data-i18n="footer_sol_1">Discord</a>
+                <a href="contacto.html" data-i18n="footer_leg_2">Contacto</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p data-i18n="footer_copy">&copy; 2026 Nova Defense Technologies. Todos los derechos reservados.</p>
+            <div style="display: flex; gap: 15px;">
+                <a href="https://discord.gg/FsbvgQWKYy" class="magnetic-element" style="color: rgba(255,255,255,0.3); font-size: 18px;"><i class="fab fa-discord"></i></a>
+                <a href="#" class="magnetic-element" style="color: rgba(255,255,255,0.3); font-size: 18px;"><i class="fab fa-telegram"></i></a>
+                <a href="#" class="magnetic-element" style="color: rgba(255,255,255,0.3); font-size: 18px;"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* =========================================
+           DICCIONARIO DE IDIOMAS (i18n)
+           ========================================= */
+        const translations = {
+            es: {
+                intro_title: "Nova Defense",
+                intro_subtitle: "Empresa de Ciberseguridad",
+                nav_services: "Servicios",
+                nav_origins: "Orígenes",
+                nav_team: "Fundadores",
+                nav_contact: "Contacto",
+                hero_badge: "Sistemas de Defensa Activos",
+                hero_title: "Protección Digital de <br><span class='text-gradient'>Siguiente Nivel</span>",
+                hero_desc: "Aseguramos tu infraestructura. Proveemos software de ciberseguridad corporativa para páginas web y moderación automática blindada para comunidades en Discord y Telegram.",
+                hero_btn: "Ver Servicios",
+                srv_title: "Ecosistema de <span class='text-gradient'>Defensa Global</span>",
+                srv_desc: "Como empresa de ciberseguridad, desarrollamos infraestructuras de protección adaptables a las plataformas más críticas de internet.",
+                srv_1_title: "Protección Web",
+                srv_1_desc: "Mitigación de ataques DDoS Capa 7, Web Application Firewall (WAF) y monitoreo de vulnerabilidades en tiempo real para tu negocio online.",
+                srv_1_f1: "Redirección de tráfico malicioso",
+                srv_1_f2: "Cifrado y análisis de logs",
+                srv_1_f3: "99.9% de Uptime garantizado",
+                srv_2_title: "Seguridad Discord",
+                srv_2_desc: "Nuestra división especializada. Prevenimos raids masivos, bloqueamos ataques de nuking y filtramos spam con IA antes de que afecte a tus usuarios.",
+                srv_2_f1: "Algoritmos Anti-Raid Neurales",
+                srv_2_f2: "Backups de infraestructura",
+                srv_2_f3: "Integración instantánea",
+                srv_3_title: "Defensa Telegram",
+                srv_3_desc: "Gestión automatizada de comunidades grandes. Eliminación de bots maliciosos, control de flood y análisis de reputación de usuarios.",
+                srv_3_f1: "Captcha multi-nivel",
+                srv_3_f2: "Global Blacklist sincronizada",
+                srv_3_f3: "Filtros de contenido avanzado",
+                stat_1: "Usuarios Protegidos",
+                stat_2: "Servidores Activos",
+                stat_3: "Monitoreo SOC",
+                stat_4: "Latencia Defensa",
+                about_title: "<span class='text-gradient'>Nuestros Orígenes:</span> Nova Defense",
+                about_desc: "Nuestra tecnología matriz nació desarrollando uno de los sistemas de seguridad autónomos más avanzados para la plataforma de Discord. Nova Defense fue el cimiento de la empresa y la demostración pública de nuestra capacidad para detener ataques masivos (raids y nuking) en milisegundos, tecnología que ahora aplicamos a gran escala en páginas web y Telegram.",
+                team_title: "Nuestros <span class='text-gradient'>Fundadores</span>",
+                team_desc: "Los arquitectos principales detrás del núcleo de seguridad y operaciones de Nova Defense.",
+                graph_title: "Inteligencia de <span class='text-gradient'>Amenazas Globales</span>",
+                graph_desc: "Incremento global de ataques mitigados en nuestra infraestructura durante los últimos 30 días.",
+                footer_desc: "Empresa líder en software de ciberseguridad. Protegemos infraestructuras web y moderamos de forma autónoma las comunidades más grandes de Discord y Telegram.",
+                footer_sol_title: "Nuestras Soluciones",
+                footer_sol_1: "Protección Web WAF",
+                footer_sol_2: "Seguridad Discord",
+                footer_sol_3: "Defensa Telegram",
+                footer_leg_title: "Legal & Empresa",
+                footer_leg_1: "Política de Privacidad",
+                footer_leg_2: "Términos de Servicio",
+                footer_leg_3: "Reportar Vulnerabilidad",
+                footer_copy: "© 2026 Nova Defense Technologies. Todos los derechos reservados."
+            },
+            en: {
+                intro_title: "Nova Defense",
+                intro_subtitle: "Cybersecurity Company",
+                nav_services: "Services",
+                nav_origins: "Origins",
+                nav_team: "Founders",
+                nav_contact: "Contact",
+                hero_badge: "Defense Systems Active",
+                hero_title: "Next-Level <br><span class='text-gradient'>Digital Protection</span>",
+                hero_desc: "We secure your infrastructure. Providing corporate cybersecurity software for websites and bulletproof automated moderation for Discord and Telegram communities.",
+                hero_btn: "View Services",
+                srv_title: "Global <span class='text-gradient'>Defense Ecosystem</span>",
+                srv_desc: "As a cybersecurity firm, we develop protective infrastructures adaptable to the internet's most critical platforms.",
+                srv_1_title: "Web Protection",
+                srv_1_desc: "Layer 7 DDoS attack mitigation, Web Application Firewall (WAF), and real-time vulnerability monitoring for your online business.",
+                srv_1_f1: "Malicious traffic redirection",
+                srv_1_f2: "Encryption and log analysis",
+                srv_1_f3: "99.9% Uptime guaranteed",
+                srv_2_title: "Discord Security",
+                srv_2_desc: "Our specialized division. We prevent massive raids, block nuking attacks, and filter AI spam before it affects your users.",
+                srv_2_f1: "Neural Anti-Raid Algorithms",
+                srv_2_f2: "Infrastructure Backups",
+                srv_2_f3: "Instant Integration",
+                srv_3_title: "Telegram Defense",
+                srv_3_desc: "Automated management for large communities. Malicious bot removal, flood control, and user reputation analysis.",
+                srv_3_f1: "Multi-level Captcha",
+                srv_3_f2: "Synchronized Global Blacklist",
+                srv_3_f3: "Advanced content filters",
+                stat_1: "Protected Users",
+                stat_2: "Active Servers",
+                stat_3: "SOC Monitoring",
+                stat_4: "Defense Latency",
+                about_title: "<span class='text-gradient'>Our Origins:</span> Nova Defense",
+                about_desc: "Our core technology was born by developing one of the most advanced autonomous security systems for the Discord platform. Nova Defense was the foundation of the company and the public demonstration of our ability to stop massive attacks (raids and nuking) in milliseconds—technology we now apply on a large scale to websites and Telegram.",
+                team_title: "Our <span class='text-gradient'>Founders</span>",
+                team_desc: "The primary architects behind the security core and operations at Nova Defense.",
+                graph_title: "Global <span class='text-gradient'>Threat Intelligence</span>",
+                graph_desc: "Global increase in mitigated attacks on our infrastructure over the last 30 days.",
+                footer_desc: "Leading company in cybersecurity software. We protect web infrastructures and autonomously moderate the largest communities on Discord and Telegram.",
+                footer_sol_title: "Our Solutions",
+                footer_sol_1: "WAF Web Protection",
+                footer_sol_2: "Discord Security",
+                footer_sol_3: "Telegram Defense",
+                footer_leg_title: "Legal & Company",
+                footer_leg_1: "Privacy Policy",
+                footer_leg_2: "Terms of Service",
+                footer_leg_3: "Report Vulnerability",
+                footer_copy: "© 2026 Nova Defense Technologies. All rights reserved."
+            }
+        };
+
+        let currentLang = 'es';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.getElementById('langText').innerText = lang.toUpperCase();
+            
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                    if(el.classList.contains('glitch-hover')) {
+                        let cleanText = el.innerText;
+                        el.setAttribute('data-text', cleanText);
+                    }
+                }
+            });
+        }
+
+        function initLang() {
+            const userLang = navigator.language || navigator.userLanguage; 
+            if (userLang.toLowerCase().includes('en')) {
+                setLanguage('en');
+            } else {
+                setLanguage('es');
+            }
+
+            document.getElementById('langToggle').addEventListener('click', () => {
+                setLanguage(currentLang === 'es' ? 'en' : 'es');
+            });
+        }
+
+        /* =========================================
+           CUSTOM CURSOR & MAGNETIC EFFECTS
+           ========================================= */
+        function initCursorAndInteractions() {
+            const cursorDot = document.getElementById('cursorDot');
+            const cursorRing = document.getElementById('cursorRing');
+            let mouseX = window.innerWidth / 2;
+            let mouseY = window.innerHeight / 2;
+            let ringX = mouseX;
+            let ringY = mouseY;
+
+            const pIcons = document.querySelectorAll('.p-icon');
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                
+                cursorDot.style.left = `${mouseX}px`;
+                cursorDot.style.top = `${mouseY}px`;
+                
+                const moveX = (mouseX / window.innerWidth - 0.5) * 40;
+                const moveY = (mouseY / window.innerHeight - 0.5) * 40;
+                document.getElementById('bgMesh').style.transform = `translate(${moveX}px, ${moveY}px)`;
+
+                pIcons.forEach((icon, index) => {
+                    const speed = (index + 1) * 0.05;
+                    const x = (window.innerWidth - mouseX * speed) / 50;
+                    const y = (window.innerHeight - mouseY * speed) / 50;
+                    gsap.to(icon, { x: x, y: y, duration: 1, ease: "power1.out" });
+                });
+            });
+
+            function renderRing() {
+                ringX += (mouseX - ringX) * 0.15;
+                ringY += (mouseY - ringY) * 0.15;
+                cursorRing.style.left = `${ringX}px`;
+                cursorRing.style.top = `${ringY}px`;
+                requestAnimationFrame(renderRing);
+            }
+            renderRing();
+
+            const magneticElements = document.querySelectorAll('.magnetic-element, a, button');
+            magneticElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    document.body.classList.add('cursor-hover');
+                });
+                el.addEventListener('mouseleave', () => {
+                    document.body.classList.remove('cursor-hover');
+                    gsap.to(el, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+                });
+
+                if(el.classList.contains('magnetic-element')) {
+                    el.addEventListener('mousemove', (e) => {
+                        const rect = el.getBoundingClientRect();
+                        const x = e.clientX - rect.left - rect.width / 2;
+                        const y = e.clientY - rect.top - rect.height / 2;
+                        gsap.to(el, {
+                            x: x * 0.3,
+                            y: y * 0.3,
+                            duration: 0.2,
+                            ease: "power2.out"
+                        });
+                    });
+                }
+            });
+
+            const tiltCards = document.querySelectorAll('.tilt-card');
+            tiltCards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const rotateX = ((y - centerY) / centerY) * -10;
+                    const rotateY = ((x - centerX) / centerX) * 10;
+
+                    gsap.to(card, {
+                        rotateX: rotateX,
+                        rotateY: rotateY,
+                        duration: 0.5,
+                        ease: "power2.out"
+                    });
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    gsap.to(card, {
+                        rotateX: 0,
+                        rotateY: 0,
+                        duration: 1,
+                        ease: "elastic.out(1, 0.3)"
+                    });
+                });
+            });
+        }
+
+        /* =========================================
+           GLOBE 3D INITIALIZATION & WEBSOCKETS
+           ========================================= */
+        function initGlobeMap() {
+            const globeContainer = document.getElementById('globeViz');
+            
+            const world = Globe()(globeContainer)
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-dark.jpg')
+                .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+                .pointOfView({ altitude: 2.5 })
+                .arcColor('color')
+                .arcDashLength(0.4)
+                .arcDashGap(0.2)
+                .arcDashInitialGap(() => Math.random() * 5)
+                .arcDashAnimateTime(1500)
+                .backgroundColor('rgba(0,0,0,0)');
+
+            world.controls().autoRotate = true;
+            world.controls().autoRotateSpeed = 1.2;
+            world.controls().enableZoom = false;
+
+            window.addEventListener('resize', () => {
+                world.width(window.innerWidth);
+                world.height(window.innerHeight);
+            });
+
+            try {
+                const socket = io();
+                let arcsData = [];
+                socket.on('new_attack', (attack) => {
+                    arcsData.push(attack);
+                    if(arcsData.length > 50) arcsData.shift();
+                    world.arcsData(arcsData);
+                });
+            } catch(e) {
+                console.warn("Socket.io no detectado.");
+            }
+        }
+
+        /* Generador de datos Matrix para el HUD del Globo */
+        function updateHUDData() {
+            const hudData = document.getElementById('hud-data-stream');
+            if(!hudData) return;
+            setInterval(() => {
+                const lat = (Math.random() * 180 - 90).toFixed(4);
+                const lng = (Math.random() * 360 - 180).toFixed(4);
+                const hex = Math.floor(Math.random() * 16777215).toString(16).toUpperCase();
+                hudData.innerHTML = `INIT_SEQ: 0x${hex}<br>LAT: ${lat}<br>LNG: ${lng}<br>STATUS: SECURE`;
+            }, 300);
+        }
+
+        /* =========================================
+           GSAP SCROLL ANIMATIONS
+           ========================================= */
+        gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+        window.addEventListener('load', () => {
+            const body = document.body;
+            const isMobile = window.innerWidth <= 768;
+            
+            initLang(); 
+            
+            if (!isMobile) {
+                initGlobeMap(); 
+                updateHUDData();
+            }
+            
+            setTimeout(() => {
+                body.classList.add('intro-done');
+                body.classList.add('loaded');
+                
+                if (window.innerWidth > 1024) {
+                    initCursorAndInteractions();
+                }
+                initGSAPAnimations();
+
+                if (!isMobile) {
+                    gsap.to(".p-icon", {
+                        y: "+=15",
+                        rotationZ: "random(-15, 15)",
+                        duration: "random(2, 4)",
+                        yoyo: true,
+                        repeat: -1,
+                        ease: "sine.inOut",
+                        stagger: 0.2
+                    });
+                }
+
+            }, 2500); 
+        });
+
+        function initGSAPAnimations() {
+            const isMobile = window.innerWidth <= 768;
+            
+            // Only run hero animations on desktop
+            if (!isMobile) {
+                gsap.to(".gsap-hero-shield", {
+                    y: 200, scale: 0.5, rotationZ: 45, opacity: 0,
+                    scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1 }
+                });
+
+                gsap.to(".gsap-hero-text", {
+                    y: -100, opacity: 0,
+                    scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 1 }
+                });
+
+                gsap.to("#bgGridLines", {
+                    yPercent: 30,
+                    scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: true }
+                });
+            }
+
+            /* --- TERMINAL HACKER (SOLO DESKTOP) --- */
+            if (!isMobile) {
+                const terminalTimeline = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: ".pinned-terminal-section",
+                        start: "top top",
+                        end: "bottom bottom",
+                        scrub: 1
+                    }
+                });
+
+                const termContent = 
+`>> INICIALIZANDO MONITOR DE RED NOVA_DEFENSE_V3
+>> ESCANEANDO PUERTOS DE ENTRADA... OK
+>> ANALIZANDO TRÁFICO GLOBAL...
+...
+[!] ANOMALÍA DETECTADA: Picos de tráfico en nodo EU-WEST
+[WARNING] ATAQUE DDoS LAYER 7 EN PROGRESO (240 Gbps)
+>> FIRMA DE BOTNET: IDENTIFICADA
+>> DESPLEGANDO ESCUDO WAF Y REGLAS DE BLOQUEO...
+[██████████░░░░░░░░░░] 45%
+[████████████████░░░░] 80%
+[████████████████████] 100%
+>> IPs MALICIOSAS AÑADIDAS A BLACKLIST MUNDIAL.
+[SUCCESS] TRÁFICO MITIGADO. SISTEMAS AL 100% DE RENDIMIENTO.`;
+
+                terminalTimeline.to("#hacker-terminal", { opacity: 1, y: 0, duration: 1 })
+                    .to("#term-text", { text: { value: termContent }, duration: 6, ease: "none" })
+                    .to("#hacker-terminal", { opacity: 0, y: -100, scale: 0.9, duration: 1 }, "+=1");
+            }
+
+            /* --- MAPA MUNDIAL CON HUD (SOLO DESKTOP) --- */
+            if (!isMobile) {
+                const cyberMapTimeline = gsap.timeline({
+                    scrollTrigger: {
+                        trigger: ".pinned-globe-section",
+                        start: "top top",
+                        end: "bottom bottom",
+                        scrub: 1 
+                    }
+                });
+
+                cyberMapTimeline.to("#scramble-text", {
+                    text: { value: "RASTREANDO VECTORES DE ATAQUE...", delimiter: "" },
+                    duration: 2,
+                    ease: "none"
+                })
+                .to("#globeViz", { opacity: 1, duration: 2 }, "<")
+                .to("#hudLayer", { opacity: 1, duration: 1 }, "<")
+                .to("#scramble-text", {
+                    text: { value: "NEUTRALIZACIÓN GLOBAL ACTIVA", delimiter: "" },
+                    duration: 2,
+                    ease: "none"
+                }, "+=1")
+                .to("#globe-sub-text", { 
+                    opacity: 1, 
+                    text: { value: "[ CENTRO DE MANDO ONLINE ]" }, 
+                    duration: 1
+                }, "<")
+                .to(".globe-overlay-text, #hudLayer", { y: -150, opacity: 0, duration: 2 }, "+=2")
+                .to("#globeViz", { scale: 1.5, opacity: 0, duration: 2 }, "<");
+            }
+
+            // Entradas laterales - solo en desktop
+            if (!isMobile) {
+                gsap.fromTo(".gsap-card-left", 
+                    { x: -150, opacity: 0 },
+                    { x: 0, opacity: 1, duration: 1, ease: "power3.out", scrollTrigger: { trigger: ".services-grid", start: "top 85%", toggleActions: "play none none reverse" }}
+                );
+                
+                gsap.fromTo(".gsap-card-bottom", 
+                    { y: 150, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 1, delay: 0.1, ease: "power3.out", scrollTrigger: { trigger: ".services-grid", start: "top 85%", toggleActions: "play none none reverse" }}
+                );
+
+                gsap.fromTo(".gsap-card-right", 
+                    { x: 150, opacity: 0 },
+                    { x: 0, opacity: 1, duration: 1, delay: 0.2, ease: "power3.out", scrollTrigger: { trigger: ".services-grid", start: "top 85%", toggleActions: "play none none reverse" }}
+                );
+
+                gsap.fromTo(".gsap-scale-up", 
+                    { scale: 0.8, opacity: 0 },
+                    { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.7)", scrollTrigger: { trigger: ".stats-section", start: "top 90%", toggleActions: "play none none reverse" }}
+                );
+
+                gsap.fromTo(".gsap-parallax-section",
+                    { width: "70%", opacity: 0, y: 50 },
+                    { width: "100%", opacity: 1, y: 0, duration: 1, scrollTrigger: { trigger: "#about", start: "top 95%", end: "top 40%", scrub: 1 }}
+                );
+            }
+
+            const fadeUpElements = gsap.utils.toArray('.gsap-fade-up');
+            fadeUpElements.forEach(element => {
+                gsap.fromTo(element, 
+                    { y: 60, opacity: 0 },
+                    { y: 0, opacity: 1, duration: 0.8, ease: "power3.out", scrollTrigger: { trigger: element, start: "top 85%", toggleActions: "play none none reverse" }}
+                );
+            });
+
+            const graphLine = document.getElementById('animGraph');
+            if(graphLine) {
+                gsap.to(graphLine, {
+                    strokeDashoffset: 0,
+                    scrollTrigger: { trigger: ".graph-container", start: "top 85%", end: "bottom 50%", scrub: 1.5 }
+                });
+            }
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            const shield = document.getElementById('shieldWrapper');
+            if(shield) {
+                const x = (window.innerWidth / 2 - e.pageX) / 40;
+                const y = (window.innerHeight / 2 - e.pageY) / 40;
+                shield.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+            }
+        });
+
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('navbar');
+            if (window.scrollY > 50) header.classList.add('scrolled');
+            else header.classList.remove('scrolled');
+        });
+
+        // --- BLOQUEO INSPECCIONAR ---
+        document.addEventListener('contextmenu', function(event) { event.preventDefault(); });
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+        }
+
+        // --- MOBILE MENU FUNCTIONALITY ---
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const mobileMenuLinks = document.querySelectorAll('.mobile-menu-link');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('active');
+                mobileMenuBtn.classList.toggle('active');
+                document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+            });
+
+            mobileMenuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.remove('active');
+                    mobileMenuBtn.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+        }
+    </script>
+</body>
+</html>
